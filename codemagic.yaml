@@ -38,7 +38,9 @@ workflows:
 
       - name: Install dependencies
         script: |
-          pnpm install
+          # reflink 지원되지 않는 파일시스템에서의 오류 회피
+          pnpm config set store-dir /tmp/pnpm-store
+          pnpm install --no-frozen-lockfile
 
       - name: Expo Prebuild (generate native iOS project)
         script: |
