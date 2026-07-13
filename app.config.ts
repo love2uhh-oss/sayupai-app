@@ -32,7 +32,7 @@ const env = {
   appSlug: "sayupai-app",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "",
+  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663723575982/WUg6ZGcFekq5soumqZThaR/icon-9MYr6cUwQAPpDRmhMe4Q4E.png",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
@@ -118,6 +118,25 @@ const config: ExpoConfig = {
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
         },
+      },
+    ],
+    [
+      "react-native-google-mobile-ads",
+      {
+        // 실제 배포 시 아래 ID를 실제 AdMob App ID로 교체하세요
+        // Google AdMob 콘솔에서 앱 ID를 확인하세요
+        androidAppId: "ca-app-pub-3940256099942544~3347511713",  // 테스트 ID
+        iosAppId: "ca-app-pub-3940256099942544~1458002511",      // 테스트 ID
+        // 실제 ID 예시:
+        // androidAppId: "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX",
+        // iosAppId: "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX",
+        userTrackingUsageDescription: "This identifier will be used to deliver personalized ads to you.",
+        skAdNetworkItems: [
+          { skAdNetworkIdentifier: "cstr6suwn9.skadnetwork" },
+          { skAdNetworkIdentifier: "4fzdc2evr5.skadnetwork" },
+          { skAdNetworkIdentifier: "2fnua5tdw4.skadnetwork" },
+          { skAdNetworkIdentifier: "ydx93a7ass.skadnetwork" },
+        ],
       },
     ],
   ],

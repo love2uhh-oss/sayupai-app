@@ -8,23 +8,58 @@ import { OpaqueColorValue, type StyleProp, type TextStyle } from "react-native";
 type IconMapping = Record<SymbolViewProps["name"], ComponentProps<typeof MaterialIcons>["name"]>;
 type IconSymbolName = keyof typeof MAPPING;
 
-/**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
- */
 const MAPPING = {
   "house.fill": "home",
+  "person.fill": "person",
   "paperplane.fill": "send",
   "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
+  "chevron.left": "chevron-left",
+  "mic.fill": "mic",
+  "mic": "mic-none",
+  "wifi": "wifi",
+  "play.fill": "play-arrow",
+  "arrow.right": "arrow-forward",
+  "crown.fill": "workspace-premium",
+  "star.fill": "star",
+  "checkmark.circle.fill": "check-circle",
+  "xmark.circle.fill": "cancel",
+  "xmark": "close",
+  "chart.bar.fill": "bar-chart",
+  "clock.fill": "access-time",
+  "video.fill": "videocam",
+  "camera.fill": "camera-alt",
+  "camera": "camera-alt",
+  "waveform": "graphic-eq",
+  "arrow.up.circle.fill": "upload",
+  "doc.fill": "description",
+  "square.and.arrow.up": "share",
+  "arrow.down.circle.fill": "download",
+  "exclamationmark.triangle.fill": "warning",
+  "info.circle.fill": "info",
+  "gear": "settings",
+  "trash.fill": "delete",
+  "plus.circle.fill": "add-circle",
+  "minus.circle.fill": "remove-circle",
+  "magnifyingglass": "search",
+  "bell.fill": "notifications",
+  "envelope.fill": "email",
+  "lock.fill": "lock",
+  "eye.fill": "visibility",
+  "eye.slash.fill": "visibility-off",
+  "gift.fill": "card-giftcard",
+  "tag.fill": "local-offer",
+  "trophy.fill": "emoji-events",
+  "lightbulb.fill": "lightbulb",
+  "target": "gps-fixed",
+  "arrow.clockwise": "refresh",
+  "ellipsis": "more-horiz",
+  "list.bullet": "list",
+  "checkmark": "check",
+  "minus": "remove",
+  "plus": "add",
 } as IconMapping;
 
-/**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
- */
 export function IconSymbol({
   name,
   size = 24,
