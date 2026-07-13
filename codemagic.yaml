@@ -63,7 +63,16 @@ workflows:
             ls -la ios/ || true
             exit 1
           fi
-          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Found workspace: $WORKSPACE"
+          ls -la ios/ || true
+          # scheme 동적 탐색 - xcschemes 폴더에서 찾기
+          SCHEME_FILE=$(find ios -name "*.xcscheme" -path "*/xcshareddata/*" | head -1)
+          if [ -n "$SCHEME_FILE" ]; then
+            SCHEME=$(basename "$SCHEME_FILE" .xcscheme)
+          else
+            # xcworkspace 이름을 scheme으로 사용
+            SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          fi
           echo "Using workspace: $WORKSPACE, scheme: $SCHEME"
           mkdir -p build/ios
           xcode-project build-ipa \
