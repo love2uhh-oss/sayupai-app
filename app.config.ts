@@ -109,20 +109,6 @@ const config: ExpoConfig = {
         },
       },
     ],
-    [
-      "react-native-google-mobile-ads",
-      {
-        androidAppId: "ca-app-pub-2375579033560413~7572700421",
-        iosAppId: "ca-app-pub-2375579033560413~5892787249",
-        userTrackingUsageDescription: "This identifier will be used to deliver personalized ads to you.",
-        skAdNetworkItems: [
-          { skAdNetworkIdentifier: "cstr6suwn9.skadnetwork" },
-          { skAdNetworkIdentifier: "4fzdc2evr5.skadnetwork" },
-          { skAdNetworkIdentifier: "2fnua5tdw4.skadnetwork" },
-          { skAdNetworkIdentifier: "ydx93a7ass.skadnetwork" },
-        ],
-      },
-    ],
   ],
   experiments: {
     typedRoutes: true,
