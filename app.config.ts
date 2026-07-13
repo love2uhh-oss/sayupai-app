@@ -110,13 +110,8 @@ const config: ExpoConfig = {
     [
       "react-native-google-mobile-ads",
       {
-        // 실제 배포 시 아래 ID를 실제 AdMob App ID로 교체하세요
-        // Google AdMob 콘솔에서 앱 ID를 확인하세요
-        androidAppId: "ca-app-pub-3940256099942544~3347511713",  // 테스트 ID
-        iosAppId: "ca-app-pub-3940256099942544~1458002511",      // 테스트 ID
-        // 실제 ID 예시:
-        // androidAppId: "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX",
-        // iosAppId: "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX",
+        androidAppId: "ca-app-pub-2375579033560413~7572700421",
+        iosAppId: "ca-app-pub-2375579033560413~5892787249",
         userTrackingUsageDescription: "This identifier will be used to deliver personalized ads to you.",
         skAdNetworkItems: [
           { skAdNetworkIdentifier: "cstr6suwn9.skadnetwork" },

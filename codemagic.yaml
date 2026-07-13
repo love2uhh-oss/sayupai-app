@@ -1,0 +1,111 @@
+workflows:
+  ios-workflow:
+    name: iOS Release Build (Expo)
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: sayup-ai-codemagic
+    environment:
+      vars:
+        BUNDLE_ID: "com.speakfitai.app"
+        APP_STORE_APP_ID: "6775925306"
+        NODE_VERSION: "22"
+      node: "22"
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        provisioning_profiles:
+          - sayup-ai-appstore-profile
+        certificates:
+          - sayup-ai-distribution
+    scripts:
+      - name: Set up keychain
+        script: |
+          keychain initialize
+
+      - name: Add certificates to keychain
+        script: |
+          keychain add-certificates
+
+      - name: Install pnpm
+        script: |
+          npm install -g pnpm@9.12.0
+
+      - name: Install dependencies
+        script: |
+          pnpm install
+
+      - name: Expo Prebuild (generate native iOS project)
+        script: |
+          npx expo prebuild --platform ios --clean --no-install
+
+      - name: Install CocoaPods
+        script: |
+          cd ios && pod install
+
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+
+      - name: Archive iOS app
+        script: |
+          xcodebuild -workspace ios/sayupaiapp.xcworkspace \
+            -scheme sayupaiapp \
+            -configuration Release \
+            -archivePath build/ios/Runner.xcarchive \
+            archive \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="SpeakFit AI ios_app_store 1783551989" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
+
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist ios/ExportOptions.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
+  android-workflow:
+    name: Android Release Build (Expo)
+    max_build_duration: 120
+    instance_type: linux_x2
+    environment:
+      vars:
+        PACKAGE_NAME: "com.speakfitai.app"
+        NODE_VERSION: "22"
+      node: "22"
+    scripts:
+      - name: Install pnpm
+        script: |
+          npm install -g pnpm@9.12.0
+
+      - name: Install dependencies
+        script: |
+          pnpm install
+
+      - name: Expo Prebuild (generate native Android project)
+        script: |
+          npx expo prebuild --platform android --clean --no-install
+
+      - name: Build Android APK/AAB
+        script: |
+          cd android && ./gradlew bundleRelease
+
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/*.apk
+
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
