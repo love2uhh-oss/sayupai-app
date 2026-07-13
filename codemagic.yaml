@@ -54,7 +54,6 @@ workflows:
 
       - name: Archive and Export iOS app
         script: |
-          # Find xcworkspace
           WORKSPACE=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1)
           if [ -z "$WORKSPACE" ]; then
             WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 3 | grep -v ".xcodeproj/" | head -1)
@@ -66,37 +65,18 @@ workflows:
           fi
           echo "Found workspace: $WORKSPACE"
 
-          # Get scheme name
           SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" 2>/dev/null | awk '/Schemes:/,0' | grep -v 'Schemes:' | grep -v 'Pods' | sed 's/^[[:space:]]*//' | grep -v '^$' | head -1)
           if [ -z "$SCHEME" ]; then
             SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           fi
           echo "Using scheme: $SCHEME"
 
-          # Create export options plist using Python (Xcode 26 compatible: app-store-connect)
-          python3 << 'PYEOF'
-import plistlib
-d = {
-  'method': 'app-store-connect',
-  'teamID': '6Q7S9N7MQ7',
-  'signingStyle': 'manual',
-  'signingCertificate': 'Apple Distribution',
-  'provisioningProfiles': {
-    'com.speakfitai.app': 'SpeakFit AI ios_app_store 1783551989'
-  },
-  'uploadBitcode': False,
-  'uploadSymbols': True
-}
-with open('/tmp/export_options.plist', 'wb') as f:
-  plistlib.dump(d, f)
-print('Export options plist created at /tmp/export_options.plist')
-PYEOF
+          python3 scripts/create_export_plist.py /tmp/export_options.plist
 
           ARCHIVE_PATH="/tmp/SayUpAI.xcarchive"
           IPA_DIR="build/ios/ipa"
           mkdir -p "$IPA_DIR"
 
-          # Archive
           xcodebuild archive \
             -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
@@ -110,7 +90,6 @@ PYEOF
             COMPILER_INDEX_STORE_ENABLE=NO \
             | xcpretty --color
 
-          # Export IPA
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$IPA_DIR" \
