@@ -29,7 +29,12 @@ workflows:
 
       - name: Install pnpm
         script: |
-          npm install -g pnpm@9.12.0
+          # pnpm이 이미 설치되어 있는 경우 버전 확인 후 필요시 재설치
+          if ! command -v pnpm &> /dev/null; then
+            npm install -g pnpm@9.12.0
+          else
+            echo "pnpm already installed: $(pnpm --version)"
+          fi
 
       - name: Install dependencies
         script: |
@@ -86,7 +91,12 @@ workflows:
     scripts:
       - name: Install pnpm
         script: |
-          npm install -g pnpm@9.12.0
+          # pnpm이 이미 설치되어 있는 경우 버전 확인 후 필요시 재설치
+          if ! command -v pnpm &> /dev/null; then
+            npm install -g pnpm@9.12.0
+          else
+            echo "pnpm already installed: $(pnpm --version)"
+          fi
 
       - name: Install dependencies
         script: |
