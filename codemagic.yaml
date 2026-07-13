@@ -29,7 +29,6 @@ workflows:
 
       - name: Install pnpm
         script: |
-          # pnpm이 이미 설치되어 있는 경우 버전 확인 후 필요시 재설치
           if ! command -v pnpm &> /dev/null; then
             npm install -g pnpm@9.12.0
           else
@@ -38,7 +37,6 @@ workflows:
 
       - name: Install dependencies
         script: |
-          # reflink 지원되지 않는 파일시스템에서의 오류 회피
           pnpm config set store-dir /tmp/pnpm-store
           pnpm install --no-frozen-lockfile
 
@@ -54,16 +52,12 @@ workflows:
         script: |
           xcode-project use-profiles
 
-      - name: Archive iOS app
+      - name: Archive and Export iOS app
         script: |
-          # xcworkspace 파일 동적 탐색 (xcworkspace 우선, xcodeproj 내부 제외)
+          # Find xcworkspace
           WORKSPACE=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1)
           if [ -z "$WORKSPACE" ]; then
-            # xcodeproj 내부의 xcworkspace 탐색
             WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 3 | grep -v ".xcodeproj/" | head -1)
-          fi
-          if [ -z "$WORKSPACE" ]; then
-            WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 3 | head -1)
           fi
           if [ -z "$WORKSPACE" ]; then
             echo "ERROR: No xcworkspace found in ios/"
@@ -71,46 +65,61 @@ workflows:
             exit 1
           fi
           echo "Found workspace: $WORKSPACE"
-          ls -la ios/ || true
-          # scheme 선택: xcodebuild -list로 앱 scheme 확정 (Pods 제외)
-          SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" 2>/dev/null | awk '/Schemes:/,0' | grep -v 'Schemes:' | grep -v 'Pods' | sed 's/^[[:space:]]*//' | head -1)
+
+          # Get scheme name
+          SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" 2>/dev/null | awk '/Schemes:/,0' | grep -v 'Schemes:' | grep -v 'Pods' | sed 's/^[[:space:]]*//' | grep -v '^$' | head -1)
           if [ -z "$SCHEME" ]; then
-            # fallback: xcworkspace 이름 사용
             SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           fi
-          echo "Using workspace: $WORKSPACE, scheme: $SCHEME"
-          # Xcode 26 호환 export options plist 생성 (method: app-store-connect)
-          python3 -c "
-import plistlib, os
+          echo "Using scheme: $SCHEME"
+
+          # Create export options plist using Python (Xcode 26 compatible: app-store-connect)
+          python3 << 'PYEOF'
+import plistlib
 d = {
   'method': 'app-store-connect',
   'teamID': '6Q7S9N7MQ7',
   'signingStyle': 'manual',
   'signingCertificate': 'Apple Distribution',
-  'provisioningProfiles': {'com.speakfitai.app': 'SpeakFit AI ios_app_store 1783551989'},
+  'provisioningProfiles': {
+    'com.speakfitai.app': 'SpeakFit AI ios_app_store 1783551989'
+  },
   'uploadBitcode': False,
   'uploadSymbols': True
 }
-with open('/Users/builder/export_options_custom.plist', 'wb') as f:
+with open('/tmp/export_options.plist', 'wb') as f:
   plistlib.dump(d, f)
-print('Export options plist created')
-"
-          # SPM 의존성 resolve (Expo 모듈 포함)
-          xcodebuild -resolvePackageDependencies -workspace "$WORKSPACE" -scheme "$SCHEME" 2>&1 | tail -5 || true
-          mkdir -p build/ios
-          xcode-project build-ipa \
-            --workspace "$WORKSPACE" \
-            --scheme "$SCHEME" \
-            --export-options-plist /Users/builder/export_options_custom.plist \
-            --archive-xcargs "PROVISIONING_PROFILE_SPECIFIER='SpeakFit AI ios_app_store 1783551989' CODE_SIGN_IDENTITY='Apple Distribution'"
+print('Export options plist created at /tmp/export_options.plist')
+PYEOF
 
-      - name: Export IPA
-        script: |
-          echo "IPA already exported by xcode-project build-ipa"
+          ARCHIVE_PATH="/tmp/SayUpAI.xcarchive"
+          IPA_DIR="build/ios/ipa"
+          mkdir -p "$IPA_DIR"
+
+          # Archive
+          xcodebuild archive \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -archivePath "$ARCHIVE_PATH" \
+            -destination "generic/platform=iOS" \
+            PROVISIONING_PROFILE_SPECIFIER="SpeakFit AI ios_app_store 1783551989" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE="Manual" \
+            DEVELOPMENT_TEAM="6Q7S9N7MQ7" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | xcpretty --color
+
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$IPA_DIR" \
+            -exportOptionsPlist /tmp/export_options.plist \
+            COMPILER_INDEX_STORE_ENABLE=NO
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - $HOME/Library/Developer/Xcode/Archives/**/*.xcarchive
+      - /tmp/*.xcarchive
       - /tmp/xcodebuild_logs/*.log
 
     publishing:
@@ -130,7 +139,6 @@ print('Export options plist created')
     scripts:
       - name: Install pnpm
         script: |
-          # pnpm이 이미 설치되어 있는 경우 버전 확인 후 필요시 재설치
           if ! command -v pnpm &> /dev/null; then
             npm install -g pnpm@9.12.0
           else
