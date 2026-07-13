@@ -12,7 +12,7 @@ const schemeFromBundleId = "sayupai";
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "SayUpAI - AI 발표 코치",
+  appName: "SayUp AI",
   appSlug: "sayupai-app",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
@@ -35,13 +35,13 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    buildNumber: "36",
+    buildNumber: "37",
     "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
   },
   android: {
-    versionCode: 36,
+    versionCode: 37,
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
       foregroundImage: "./assets/images/android-icon-foreground.png",
