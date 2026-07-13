@@ -56,24 +56,28 @@ workflows:
 
       - name: Archive iOS app
         script: |
-          xcodebuild -workspace ios/sayupaiapp.xcworkspace \
-            -scheme sayupaiapp \
-            -configuration Release \
-            -archivePath build/ios/Runner.xcarchive \
-            archive \
-            CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="SpeakFit AI ios_app_store 1783551989" \
-            CODE_SIGN_IDENTITY="Apple Distribution"
+          # xcworkspace 파일 동적 탐색
+          WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 2 | head -1)
+          if [ -z "$WORKSPACE" ]; then
+            echo "ERROR: No xcworkspace found in ios/"
+            ls -la ios/ || true
+            exit 1
+          fi
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Using workspace: $WORKSPACE, scheme: $SCHEME"
+          mkdir -p build/ios
+          xcode-project build-ipa \
+            --workspace "$WORKSPACE" \
+            --scheme "$SCHEME" \
+            --archive-xcargs "PROVISIONING_PROFILE_SPECIFIER='SpeakFit AI ios_app_store 1783551989' CODE_SIGN_IDENTITY='Apple Distribution'"
 
       - name: Export IPA
         script: |
-          xcodebuild -exportArchive \
-            -archivePath build/ios/Runner.xcarchive \
-            -exportPath build/ios/ipa \
-            -exportOptionsPlist ios/ExportOptions.plist
+          echo "IPA already exported by xcode-project build-ipa"
 
     artifacts:
       - build/ios/ipa/*.ipa
+      - $HOME/Library/Developer/Xcode/Archives/**/*.xcarchive
       - /tmp/xcodebuild_logs/*.log
 
     publishing:
