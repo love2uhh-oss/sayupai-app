@@ -105,7 +105,6 @@ const config: ExpoConfig = {
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
           extraMavenRepos: [],
-          kotlinVersion: "2.0.21",
         },
       },
     ],
