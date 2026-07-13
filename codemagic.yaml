@@ -79,12 +79,39 @@ workflows:
             SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           fi
           echo "Using workspace: $WORKSPACE, scheme: $SCHEME"
+          # Xcode 26 호환 export options plist 생성 (method: app-store-connect)
+          cat > /Users/builder/export_options_custom.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>app-store-connect</string>
+  <key>teamID</key>
+  <string>6Q7S9N7MQ7</string>
+  <key>signingStyle</key>
+  <string>manual</string>
+  <key>signingCertificate</key>
+  <string>Apple Distribution</string>
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>com.speakfitai.app</key>
+    <string>SpeakFit AI ios_app_store 1783551989</string>
+  </dict>
+  <key>uploadBitcode</key>
+  <false/>
+  <key>uploadSymbols</key>
+  <true/>
+</dict>
+</plist>
+EOF
           # SPM 의존성 resolve (Expo 모듈 포함)
           xcodebuild -resolvePackageDependencies -workspace "$WORKSPACE" -scheme "$SCHEME" 2>&1 | tail -5 || true
           mkdir -p build/ios
           xcode-project build-ipa \
             --workspace "$WORKSPACE" \
             --scheme "$SCHEME" \
+            --export-options-plist /Users/builder/export_options_custom.plist \
             --archive-xcargs "PROVISIONING_PROFILE_SPECIFIER='SpeakFit AI ios_app_store 1783551989' CODE_SIGN_IDENTITY='Apple Distribution'"
 
       - name: Export IPA
