@@ -56,8 +56,15 @@ workflows:
 
       - name: Archive iOS app
         script: |
-          # xcworkspace 파일 동적 탐색
-          WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 2 | head -1)
+          # xcworkspace 파일 동적 탐색 (xcworkspace 우선, xcodeproj 내부 제외)
+          WORKSPACE=$(find ios -maxdepth 1 -name "*.xcworkspace" | head -1)
+          if [ -z "$WORKSPACE" ]; then
+            # xcodeproj 내부의 xcworkspace 탐색
+            WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 3 | grep -v ".xcodeproj/" | head -1)
+          fi
+          if [ -z "$WORKSPACE" ]; then
+            WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 3 | head -1)
+          fi
           if [ -z "$WORKSPACE" ]; then
             echo "ERROR: No xcworkspace found in ios/"
             ls -la ios/ || true
@@ -65,15 +72,15 @@ workflows:
           fi
           echo "Found workspace: $WORKSPACE"
           ls -la ios/ || true
-          # scheme 동적 탐색 - xcschemes 폴더에서 찾기
-          SCHEME_FILE=$(find ios -name "*.xcscheme" -path "*/xcshareddata/*" | head -1)
-          if [ -n "$SCHEME_FILE" ]; then
-            SCHEME=$(basename "$SCHEME_FILE" .xcscheme)
-          else
-            # xcworkspace 이름을 scheme으로 사용
+          # scheme 선택: xcodebuild -list로 앱 scheme 확정 (Pods 제외)
+          SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" 2>/dev/null | awk '/Schemes:/,0' | grep -v 'Schemes:' | grep -v 'Pods' | sed 's/^[[:space:]]*//' | head -1)
+          if [ -z "$SCHEME" ]; then
+            # fallback: xcworkspace 이름 사용
             SCHEME=$(basename "$WORKSPACE" .xcworkspace)
           fi
           echo "Using workspace: $WORKSPACE, scheme: $SCHEME"
+          # SPM 의존성 resolve (Expo 모듈 포함)
+          xcodebuild -resolvePackageDependencies -workspace "$WORKSPACE" -scheme "$SCHEME" 2>&1 | tail -5 || true
           mkdir -p build/ios
           xcode-project build-ipa \
             --workspace "$WORKSPACE" \
