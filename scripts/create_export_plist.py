@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Create export options plist for Xcode (app-store method)"""
+"""Create export options plist for Xcode (App Store distribution)"""
 import plistlib
 import sys
 
 output_path = sys.argv[1] if len(sys.argv) > 1 else '/tmp/export_options.plist'
 
 d = {
-    'method': 'app-store-connect',
+    'destination': 'export',
     'teamID': '6Q7S9N7MQ7',
     'signingStyle': 'manual',
     'signingCertificate': 'Apple Distribution',
