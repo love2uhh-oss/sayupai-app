@@ -10,6 +10,8 @@ workflows:
         BUNDLE_ID: "com.speakfitai.app"
         APP_STORE_APP_ID: "6775925306"
         NODE_VERSION: "22"
+        TEAM_ID: "6Q7S9N7MQ7"
+        PROVISIONING_PROFILE_NAME: "SpeakFit AI ios_app_store 1783551989"
       node: "22"
       xcode: 16.4
       cocoapods: default
@@ -43,6 +45,31 @@ workflows:
       - name: Expo Prebuild (generate native iOS project)
         script: |
           npx expo prebuild --platform ios --clean --no-install
+
+      - name: Fix Xcode project code signing (force manual App Store signing)
+        script: |
+          PBXPROJ="ios/SayUpAI.xcodeproj/project.pbxproj"
+          if [ ! -f "$PBXPROJ" ]; then
+            echo "ERROR: $PBXPROJ not found"
+            ls ios/ || true
+            exit 1
+          fi
+          echo "=== Before fix: CODE_SIGN_STYLE occurrences ==="
+          grep -n "CODE_SIGN_STYLE\|DEVELOPMENT_TEAM\|PROVISIONING_PROFILE\|CODE_SIGN_IDENTITY" "$PBXPROJ" | head -30 || true
+
+          # Force manual signing: replace Automatic with Manual
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' "$PBXPROJ"
+          # Set development team
+          sed -i '' "s/DEVELOPMENT_TEAM = \"\";/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$PBXPROJ"
+          sed -i '' "s/DEVELOPMENT_TEAM = [A-Z0-9]*;/DEVELOPMENT_TEAM = $TEAM_ID;/g" "$PBXPROJ"
+          # Set code sign identity to Apple Distribution for Release
+          sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";/g' "$PBXPROJ"
+          sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "Apple Distribution";/g' "$PBXPROJ"
+          # Set provisioning profile specifier
+          sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = \"\";/PROVISIONING_PROFILE_SPECIFIER = \"$PROVISIONING_PROFILE_NAME\";/g" "$PBXPROJ"
+
+          echo "=== After fix: CODE_SIGN_STYLE occurrences ==="
+          grep -n "CODE_SIGN_STYLE\|DEVELOPMENT_TEAM\|PROVISIONING_PROFILE\|CODE_SIGN_IDENTITY" "$PBXPROJ" | head -30 || true
 
       - name: Install CocoaPods
         script: |
@@ -92,10 +119,6 @@ workflows:
             -configuration Release \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="SpeakFit AI ios_app_store 1783551989" \
-            DEVELOPMENT_TEAM=6Q7S9N7MQ7 \
             COMPILER_INDEX_STORE_ENABLE=NO \
             2>&1 | tee /tmp/xcodebuild_archive.log | tail -50
 
