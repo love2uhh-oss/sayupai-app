@@ -6,7 +6,7 @@ import sys
 output_path = sys.argv[1] if len(sys.argv) > 1 else '/tmp/export_options.plist'
 
 d = {
-    'method': 'app-store',
+    'method': 'app-store-connect',
     'teamID': '6Q7S9N7MQ7',
     'signingStyle': 'manual',
     'signingCertificate': 'Apple Distribution',
