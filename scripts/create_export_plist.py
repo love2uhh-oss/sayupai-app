@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Create export options plist for Xcode (App Store distribution)
-Compatible with both Xcode 16.x (method: app-store) and Xcode 26.x (method: app-store-connect)
+Xcode 26+ does NOT support 'method' key - it has been removed.
+Xcode 16 and earlier use 'method: app-store'.
 """
 import plistlib
 import sys
@@ -13,9 +14,7 @@ def get_xcode_version():
             ['xcodebuild', '-version'],
             capture_output=True, text=True, timeout=10
         )
-        # Output: "Xcode 16.4\nBuild version ..."
         first_line = result.stdout.strip().split('\n')[0]
-        # Extract major version number
         version_str = first_line.replace('Xcode ', '').strip()
         major = int(version_str.split('.')[0])
         print(f'Detected Xcode version: {version_str} (major: {major})')
@@ -28,16 +27,8 @@ output_path = sys.argv[1] if len(sys.argv) > 1 else '/tmp/export_options.plist'
 
 xcode_major = get_xcode_version()
 
-# Xcode 26+ uses 'app-store-connect', Xcode 16 and earlier uses 'app-store'
-if xcode_major >= 26:
-    method_value = 'app-store-connect'
-else:
-    method_value = 'app-store'
-
-print(f'Using method: {method_value}')
-
+# Base options without 'method' key (required for Xcode 26+)
 d = {
-    'method': method_value,
     'destination': 'export',
     'teamID': '6Q7S9N7MQ7',
     'signingStyle': 'manual',
@@ -49,7 +40,13 @@ d = {
     'uploadSymbols': True
 }
 
+# Xcode 16 and earlier require 'method' key
+if xcode_major < 26:
+    d['method'] = 'app-store'
+    print(f'Xcode {xcode_major}: Adding method=app-store')
+else:
+    print(f'Xcode {xcode_major}: No method key (Xcode 26+ removed this key)')
+
 with open(output_path, 'wb') as f:
     plistlib.dump(d, f)
 print(f'Export options plist created at {output_path}')
-print(f'Contents: method={method_value}, teamID=6Q7S9N7MQ7, signingStyle=manual')
