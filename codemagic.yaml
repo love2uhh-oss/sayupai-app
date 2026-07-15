@@ -88,6 +88,7 @@ workflows:
           echo "=== Final exportOptions ==="
           cat "$EXPORT_OPTIONS"
 
+          set -o pipefail
           xcodebuild archive \
             -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
@@ -95,10 +96,19 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            | xcpretty --color
+            2>&1 | tee /tmp/xcodebuild_archive.log | tail -50
+
+          ARCHIVE_EXIT=${PIPESTATUS[0]}
+          echo "=== Archive exit code: $ARCHIVE_EXIT ==="
+          if [ $ARCHIVE_EXIT -ne 0 ]; then
+            echo "=== Archive FAILED. Last 100 lines of log ==="
+            tail -100 /tmp/xcodebuild_archive.log
+            exit $ARCHIVE_EXIT
+          fi
 
           echo "=== Archive result ==="
           ls -la "$ARCHIVE_PATH" || echo "Archive not found!"
+          ls -la "$ARCHIVE_PATH/Products/" || echo "Products dir not found!"
 
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
