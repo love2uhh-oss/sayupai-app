@@ -1,11 +1,20 @@
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity, Alert } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { startOAuthLogin } from "@/constants/oauth";
 
 export default function AuthScreen() {
   const colors = useColors();
+
+  const handleLogin = async () => {
+    try {
+      await startOAuthLogin();
+    } catch (error) {
+      Alert.alert("로그인 오류", "로그인을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.");
+    }
+  };
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -28,7 +37,7 @@ export default function AuthScreen() {
         ].map((btn, i) => (
           <TouchableOpacity
             key={i}
-            onPress={() => {}}
+            onPress={handleLogin}
             style={{ width: "100%", backgroundColor: i === 0 ? colors.foreground : colors.surface, borderRadius: 12, paddingVertical: 14, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 10, marginBottom: 12, borderWidth: i === 1 ? 1 : 0, borderColor: colors.border }}
             activeOpacity={0.8}
           >
@@ -36,7 +45,7 @@ export default function AuthScreen() {
             <Text style={{ fontSize: 15, fontWeight: "600", color: i === 0 ? colors.background : colors.foreground }}>{btn.label}</Text>
           </TouchableOpacity>
         ))}
-        <Text style={{ fontSize: 12, color: colors.mutedDark, textAlign: "center", marginTop: 16, lineHeight: 18 }}>
+        <Text style={{ fontSize: 12, color: colors.muted, textAlign: "center", marginTop: 16, lineHeight: 18 }}>
           {"계속 진행하면 이용약관 및\n개인정보처리방침에 동의하게 됩니다"}
         </Text>
       </View>

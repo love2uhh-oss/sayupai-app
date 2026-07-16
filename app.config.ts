@@ -25,8 +25,8 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.2.5",
-  runtimeVersion: "1.2.5",
+  version: "1.2.6",
+  runtimeVersion: "1.2.6",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -35,13 +35,13 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    buildNumber: "45",
+    buildNumber: "46",
     "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
   },
   android: {
-    versionCode: 45,
+    versionCode: 46,
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
       foregroundImage: "./assets/images/android-icon-foreground.png",
@@ -76,14 +76,22 @@ const config: ExpoConfig = {
     [
       "expo-audio",
       {
-        microphonePermission: "SayUp AI uses the microphone to record your speech for AI-powered presentation and speaking practice. Your voice recordings are analyzed to provide personalized coaching feedback.",
+        microphonePermission: "SayUp AI uses the microphone to record your voice during presentation practice sessions. For example, when you tap the record button to practice a speech, your voice is captured and analyzed by AI to provide feedback on your speaking pace, clarity, and delivery. Recordings are processed for coaching purposes only.",
+      },
+    ],
+    [
+      "expo-image-picker",
+      {
+        cameraPermission: "SayUp AI uses the camera to record your presentation video so the AI can analyze your body language, facial expressions, and delivery style. For example, you can record yourself giving a speech and receive detailed coaching feedback. Video is used for analysis only.",
+        microphonePermission: "SayUp AI uses the microphone to record audio during video capture for presentation analysis. Your voice is analyzed alongside your video to provide comprehensive coaching feedback on both delivery and content.",
+        photosPermission: "SayUp AI accesses your photo library to let you select an existing presentation video for AI analysis. For example, you can choose a previously recorded speech to receive coaching feedback on your delivery and speaking style.",
       },
     ],
     [
       "expo-video",
       {
-        supportsBackgroundPlayback: true,
-        supportsPictureInPicture: true,
+        supportsBackgroundPlayback: false,
+        supportsPictureInPicture: false,
       },
     ],
     [

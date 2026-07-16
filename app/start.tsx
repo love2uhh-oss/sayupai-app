@@ -1,4 +1,4 @@
-import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, Alert, Platform } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
@@ -6,6 +6,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { AdBanner } from "@/components/ad-banner";
 import { useSubscription } from "@/hooks/use-subscription";
+import * as ImagePicker from "expo-image-picker";
 
 const PURPOSES = [
   { id: "ir", label: "IR 피치", emoji: "💼" },
@@ -20,12 +21,61 @@ export default function StartScreen() {
   const colors = useColors();
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
   const [hasVideo, setHasVideo] = useState(false);
+  const [videoUri, setVideoUri] = useState<string | null>(null);
   const { isPro, canAnalyze, incrementAnalysis } = useSubscription();
 
+  const pickFromGallery = async () => {
+    if (Platform.OS !== "web") {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "권한 필요",
+          "발표 영상을 선택하려면 사진 라이브러리 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요."
+        );
+        return;
+      }
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setVideoUri(result.assets[0].uri);
+      setHasVideo(true);
+    }
+  };
+
+  const pickFromCamera = async () => {
+    if (Platform.OS !== "web") {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "권한 필요",
+          "발표 영상을 촬영하려면 카메라 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요."
+        );
+        return;
+      }
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setVideoUri(result.assets[0].uri);
+      setHasVideo(true);
+    }
+  };
+
   const handlePickVideo = () => {
-    Alert.alert("영상 선택", "발표 영상을 선택해주세요", [
-      { text: "카메라로 촬영", onPress: () => setHasVideo(true) },
-      { text: "갤러리에서 선택", onPress: () => setHasVideo(true) },
+    Alert.alert("영상 선택", "발표 영상을 어떻게 추가하시겠어요?", [
+      { text: "카메라로 촬영", onPress: pickFromCamera },
+      { text: "갤러리에서 선택", onPress: pickFromGallery },
       { text: "취소", style: "cancel" },
     ]);
   };

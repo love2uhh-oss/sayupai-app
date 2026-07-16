@@ -31,7 +31,7 @@ export default function LiveCoachScreen() {
           {isActive ? "AI가 실시간으로 발표를 분석하고 있습니다" : "시작 버튼을 누르면 AI가 실시간으로\n발표를 분석하고 피드백을 제공합니다"}
         </Text>
         <TouchableOpacity
-          onPress={() => setIsActive(!isActive)}
+          onPress={handleToggleCoaching}
           style={{ backgroundColor: isActive ? colors.error : colors.primary, borderRadius: 12, paddingVertical: 16, paddingHorizontal: 40 }}
           activeOpacity={0.8}
         >
