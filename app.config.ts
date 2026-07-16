@@ -25,8 +25,8 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.2.4",
-  runtimeVersion: "1.2.4",
+  version: "1.2.5",
+  runtimeVersion: "1.2.5",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -35,13 +35,13 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    buildNumber: "43",
+    buildNumber: "45",
     "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
   },
   android: {
-    versionCode: 43,
+    versionCode: 45,
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
       foregroundImage: "./assets/images/android-icon-foreground.png",
@@ -76,7 +76,7 @@ const config: ExpoConfig = {
     [
       "expo-audio",
       {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
+        microphonePermission: "SayUp AI uses the microphone to record your speech for AI-powered presentation and speaking practice. Your voice recordings are analyzed to provide personalized coaching feedback.",
       },
     ],
     [
