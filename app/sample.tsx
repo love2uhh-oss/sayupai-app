@@ -1,5 +1,6 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, Share, Platform, Alert } from "react-native";
 import { router } from "expo-router";
+import * as Clipboard from "expo-clipboard";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -25,10 +26,40 @@ const SAMPLE_DATA = {
   ],
 };
 
+const SHARE_URL = "https://sayupai.co.kr";
+
 export default function SampleScreen() {
   const colors = useColors();
   const scoreColor =
     SAMPLE_DATA.score >= 80 ? colors.success : SAMPLE_DATA.score >= 60 ? colors.warning : colors.error;
+
+  const shareText = `📊 SayUpAI 발표 분석 결과\n\n🎯 ${SAMPLE_DATA.title}\n📅 ${SAMPLE_DATA.date} · ${SAMPLE_DATA.duration}\n\n⭐ 종합 점수: ${SAMPLE_DATA.score}점 (${SAMPLE_DATA.score >= 80 ? "우수" : SAMPLE_DATA.score >= 60 ? "보통" : "개선 필요"})\n🗣 말하기 속도: ${SAMPLE_DATA.speakingRate}\n\n💡 다음 미션: ${SAMPLE_DATA.nextMission}\n\n👉 나도 발표 분석하기: ${SHARE_URL}`;
+
+  const handleShare = async () => {
+    try {
+      if (Platform.OS === "web") {
+        // 웹: 클립보드 복사
+        await Clipboard.setStringAsync(shareText);
+        Alert.alert("복사 완료", "분석 결과가 클립보드에 복사됐습니다.");
+      } else {
+        await Share.share({
+          message: shareText,
+          title: "SayUpAI 발표 분석 결과",
+        });
+      }
+    } catch (e) {
+      console.error("Share error:", e);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await Clipboard.setStringAsync(SHARE_URL);
+      Alert.alert("링크 복사", "sayupai.co.kr 링크가 복사됐습니다.");
+    } catch (e) {
+      console.error("Copy error:", e);
+    }
+  };
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -46,12 +77,12 @@ export default function SampleScreen() {
         <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
           <IconSymbol name="chevron.left" size={24} color={colors.foreground} />
         </TouchableOpacity>
-        <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground }}>
+        <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground, flex: 1 }}>
           샘플 분석 리포트
         </Text>
         <View
           style={{
-            marginLeft: 10,
+            marginRight: 8,
             paddingHorizontal: 8,
             paddingVertical: 3,
             borderRadius: 8,
@@ -60,7 +91,12 @@ export default function SampleScreen() {
         >
           <Text style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}>SAMPLE</Text>
         </View>
+        {/* 공유 버튼 */}
+        <TouchableOpacity onPress={handleShare} activeOpacity={0.7}>
+          <IconSymbol name="square.and.arrow.up" size={22} color={colors.primary} />
+        </TouchableOpacity>
       </View>
+
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
         <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
           <Text style={{ fontSize: 20, fontWeight: "700", color: colors.foreground, marginBottom: 4 }}>
@@ -71,6 +107,8 @@ export default function SampleScreen() {
             <Text style={{ fontSize: 13, color: colors.muted }}>{SAMPLE_DATA.duration}</Text>
           </View>
         </View>
+
+        {/* 종합 점수 */}
         <View
           style={{
             marginHorizontal: 20, marginTop: 20, backgroundColor: colors.surface,
@@ -90,6 +128,8 @@ export default function SampleScreen() {
             {SAMPLE_DATA.score >= 80 ? "우수" : SAMPLE_DATA.score >= 60 ? "보통" : "개선 필요"}
           </Text>
         </View>
+
+        {/* 말하기 습관 분석 */}
         <View
           style={{
             marginHorizontal: 20, marginTop: 16, backgroundColor: colors.surface,
@@ -125,6 +165,8 @@ export default function SampleScreen() {
             </View>
           ))}
         </View>
+
+        {/* 다음 미션 */}
         <View
           style={{
             marginHorizontal: 20, marginTop: 16, backgroundColor: `${colors.primary}15`,
@@ -137,10 +179,57 @@ export default function SampleScreen() {
           </View>
           <Text style={{ fontSize: 14, color: colors.foreground, lineHeight: 22 }}>{SAMPLE_DATA.nextMission}</Text>
         </View>
-        <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+
+        {/* 공유 버튼 영역 */}
+        <View style={{ paddingHorizontal: 20, marginTop: 20, gap: 10 }}>
+          {/* 공유하기 */}
+          <TouchableOpacity
+            onPress={handleShare}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              backgroundColor: colors.surface,
+              borderRadius: 12,
+              paddingVertical: 14,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="square.and.arrow.up" size={18} color={colors.primary} />
+            <Text style={{ fontSize: 15, fontWeight: "600", color: colors.primary }}>
+              결과 공유하기
+            </Text>
+          </TouchableOpacity>
+
+          {/* 링크 복사 */}
+          <TouchableOpacity
+            onPress={handleCopyLink}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              backgroundColor: colors.surface,
+              borderRadius: 12,
+              paddingVertical: 14,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="doc.fill" size={18} color={colors.muted} />
+            <Text style={{ fontSize: 15, fontWeight: "600", color: colors.foreground }}>
+              링크 복사
+            </Text>
+          </TouchableOpacity>
+
+          {/* 내 발표 분석하기 */}
           <TouchableOpacity
             onPress={() => router.push("/start")}
-            style={{ backgroundColor: colors.primary, borderRadius: 12, paddingVertical: 16, alignItems: "center", marginBottom: 12 }}
+            style={{ backgroundColor: colors.primary, borderRadius: 12, paddingVertical: 16, alignItems: "center" }}
             activeOpacity={0.8}
           >
             <Text style={{ fontSize: 16, fontWeight: "700", color: colors.background }}>내 발표 분석하기</Text>
