@@ -1,6 +1,6 @@
 import { Text, View, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -8,6 +8,10 @@ import { useColors } from "@/hooks/use-colors";
 export default function LiveCoachScreen() {
   const colors = useColors();
   const [isActive, setIsActive] = useState(false);
+
+  const handleToggleCoaching = useCallback(() => {
+    setIsActive((prev) => !prev);
+  }, []);
 
   return (
     <ScreenContainer containerClassName="bg-background">

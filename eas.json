@@ -28,7 +28,10 @@
       "ios": {
         "appleId": "love2uhh@naver.com",
         "ascAppId": "6775925306",
-        "appleTeamId": "6Q7S9N7MQ7"
+        "appleTeamId": "6Q7S9N7MQ7",
+        "ascApiKeyPath": "/home/ubuntu/upload/AuthKey_L6KP58ZZ6K.p8",
+        "ascApiKeyIssuerId": "0f43732c-fdb6-442e-b43c-61baae447878",
+        "ascApiKeyId": "L6KP58ZZ6K"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
